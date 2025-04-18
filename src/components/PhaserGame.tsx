@@ -1,10 +1,19 @@
 'use client';
+
 import { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import config from '@/phaser/config';
 
 const PhaserGame = () => {
   const gameRef = useRef<HTMLDivElement>(null);
+  const gameInstance = useRef<Phaser.Game | null>(null);
+
+  // Handle window resizing
+  const handleResize = () => {
+    if (gameInstance.current) {
+      gameInstance.current.scale.resize(window.innerWidth, window.innerHeight);
+    }
+  };
 
   useEffect(() => {
     if (!gameRef.current) return;
@@ -16,10 +25,17 @@ const PhaserGame = () => {
       parent: gameRef.current,
     };
 
-    const game = new Phaser.Game(fullConfig);
+    // Create the game instance
+    gameInstance.current = new Phaser.Game(fullConfig);
+
+    // Add resize listener
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      game.destroy(true);
+      if (gameInstance.current) {
+        gameInstance.current.destroy(true);
+      }
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 

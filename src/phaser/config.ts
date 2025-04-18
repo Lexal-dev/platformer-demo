@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { Start } from './scenes/Start';
 import HUD from '@/class/HUD';
 import { Pause } from './scenes/Pause';
@@ -6,7 +6,7 @@ import { Pause } from './scenes/Pause';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  title: 'Overlord Rising',
+  title: 'platformer-demo',
   parent: 'game-container',
   backgroundColor: '#575757',
   pixelArt: true,
