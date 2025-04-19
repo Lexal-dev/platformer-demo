@@ -20,6 +20,7 @@ import Ghost from '@/class/enemies/Ghost';
 import KingSlime from '@/class/enemies/KingSlime';
 import Jumper from '@/class/objects/Jumper';
 import spikesInit from '@/tilemapSetup/spikesMap';
+import frontOfPlayerLayerInit from '@/tilemapSetup/objectsMap';
 
 export class Start extends Phaser.Scene {
   private backgroundMusic!: Phaser.Sound.BaseSound;
@@ -40,7 +41,6 @@ export class Start extends Phaser.Scene {
   coins!: Phaser.Physics.Arcade.Group;
   canons!: Phaser.Physics.Arcade.Group;
   projectiles!: Phaser.Physics.Arcade.Group;
-  spikeZones!: Phaser.Physics.Arcade.Group;
   slimes!: Phaser.Physics.Arcade.Group;
   ghosts!: Phaser.Physics.Arcade.Group;
   enemiesProjectile!: Phaser.Physics.Arcade.Group;
@@ -174,7 +174,7 @@ export class Start extends Phaser.Scene {
     this.coins = this.physics.add.group();
     this.restoreBalls = this.physics.add.group();
     this.waterTilesGroup = this.physics.add.staticGroup();
-    this.spikeZones = this.physics.add.group();
+
     this.slimes = this.physics.add.group();
     this.ghosts = this.physics.add.group({
       runChildUpdate: true 
@@ -207,39 +207,12 @@ export class Start extends Phaser.Scene {
         this.camera = new Camera(this, this.player, this.groundLayer)
     }
 
-    if(this.spikeLayer)
+    if(this.spikeLayer && this.frontOfPlayerLayer)
     {
       spikesInit(this.spikeLayer, this.player, this)
+      frontOfPlayerLayerInit(this.frontOfPlayerLayer, this)
     }
  
-     // ADD SPRITE BOXS AND BARILS REMOVE TILE
-    try 
-    {
-      if(!this.frontOfPlayerLayer) return;
-      this.frontOfPlayerLayer.forEachTile(tile=> {
-        if (tile.index === 57 && this.frontOfPlayerLayer) {
-            //barils
-            const x = tile.pixelX + 9;
-            const y = tile.pixelY;
-            const baril = new Baril(this, x, y + 8);
-            this.barils.add(baril);
-            this.frontOfPlayerLayer.removeTileAt(tile.x, tile.y);
-        }
-  
-      if(tile.index === 59 && this.frontOfPlayerLayer)
-      {
-          const x = tile.pixelX + 9;
-          const y = tile.pixelY;
-          const box = new Box(this, x, y + 8);
-          this.boxs.add(box);
-          this.frontOfPlayerLayer.removeTileAt(tile.x, tile.y);
-      }
-    });
-    } 
-    catch (err)
-    {
-      console.log(err);
-    }
     
  // ADD SPRITE COINS REMOVE TILE
     try
