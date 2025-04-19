@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import KeyManager from '@/class/KeysManager';
 import Player from '@/class/player/Player';
 import KingSlime from '@/class/enemies/KingSlime';

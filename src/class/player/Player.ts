@@ -13,6 +13,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     private playerController: PlayerController;
     private playerAttacks: PlayerAttacks;
     private playerAnimations: PlayerAnimations;
+    private hitting: boolean;
     #movement: MovementState;
     #stats: PlayerStats;
   
@@ -29,7 +30,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.playerController = new PlayerController(this, this.keys, scene as Start)
         this.playerAttacks = new PlayerAttacks(this, this.keys, scene as Start)
         this.playerAnimations = new PlayerAnimations(this, scene as Start);
-        
+        this.hitting = false;
+
         this.#movement = {
           speed: 150,
           lastDirection: 'default',
@@ -76,8 +78,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     public knockBack(knockbackForce: number, knockbackDirection: 'top' | 'bottom' | 'left' | 'right', hitLife: number = 0) 
     {
-        this.touchActive = false;
-        this.setTinted(400);
+        this.setTinted(100);
 
         this.scene.time.delayedCall(10, () => {
             switch (knockbackDirection) {
@@ -106,17 +107,21 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     public setTinted(time: number) 
     {
         this.touchActive = false;
+        this.hasHit = true;
         this.setTint(0xff0000);
         this.scene.sound.play('playerHitSound', {
             volume: 0.3,
             rate: 1
         });
+
         this.scene.time.delayedCall(time, () => {
             this.touchActive = true;
+            this.hasHit = false;
             this.clearTint();
             this.setVelocityX(0);
         });
     }
+    
 
     public forcedJump(strengh:number)
     {
@@ -130,6 +135,17 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.scene.time.delayedCall(200, () => {
             this.touchActive = true;
         })
+    }
+
+    // HasHit
+    get hasHit(): boolean
+    {
+        return this.hitting;
+    }
+
+    set hasHit(boolean: boolean)
+    {
+        this.hitting = boolean;
     }
 
     // BODY MANAGEMENT
@@ -154,7 +170,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     set takeDamage(damage: number) {
-        if (damage === 0 || damage % 1 !== 0) return;
+        if (damage === 0 || damage % 1 !== 0 && !this.hasHit) return;
         const positiveDamage = Math.abs(damage); 
         this.#stats.lifePoint = Math.max(0, this.#stats.lifePoint - positiveDamage); 
     }
@@ -186,6 +202,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             this.#stats.manaPoint -= positiveAmount; 
         }
     }
+
+
+
       
     // COINS MANAGEMENT
     get coins(): number 

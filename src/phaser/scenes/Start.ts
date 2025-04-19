@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import Player from  '@/class/player/Player';
 import Camera from '@/class/Camera';
 import Baril from '@/class/objects/Baril';
@@ -19,6 +19,7 @@ import Slime from '@/class/enemies/Slimes';
 import Ghost from '@/class/enemies/Ghost';
 import KingSlime from '@/class/enemies/KingSlime';
 import Jumper from '@/class/objects/Jumper';
+import spikesInit from '@/tilemapSetup/spikesMap';
 
 export class Start extends Phaser.Scene {
   private backgroundMusic!: Phaser.Sound.BaseSound;
@@ -109,11 +110,20 @@ export class Start extends Phaser.Scene {
     this.keys = this.keyManager.getKeys();
     const map = this.make.tilemap({ key: 'start' });
     
-    this.backgroundMusic = this.sound.add('backgroundMusic', {
-      volume: 0.6,
-      loop: true
-    });
-    this.backgroundMusic.play();
+    if (!this.backgroundMusic || !this.backgroundMusic.isPlaying) {
+      if (!this.backgroundMusic) {
+        this.backgroundMusic = this.sound.add('backgroundMusic', {
+          volume: 0.6,
+          loop: true
+        });
+      }
+    
+      this.backgroundMusic.play();
+    } else {
+      console.log("La musique est déjà en cours de lecture.");
+    }
+
+    
 
     // tilesets loaded
     const groundTileset = map.addTilesetImage('ground', 'ground');
@@ -188,7 +198,7 @@ export class Start extends Phaser.Scene {
     // PLAYER
     createPlayerAnimations(this);
     this.keyManager = new KeyManager(this);
-    this.player = new Player(this, 70, 938, this.keyManager);
+    this.player = new Player(this, 1350, 150, this.keyManager);
 
 
     //CAMERA
@@ -197,105 +207,11 @@ export class Start extends Phaser.Scene {
         this.camera = new Camera(this, this.player, this.groundLayer)
     }
 
-     // ADD SPRITE SPIKE REMOVE TILE
-     try {
-      if (!this.spikeLayer) return;
-    
-      // SPIKES TOP
-      this.spikeLayer.forEachTile(tile => {
-        if (tile.index === 37 && this.spikeLayer) {
-          const hitbox = this.add.zone(tile.getCenterX(), tile.getCenterY(), tile.width, tile.height);
-          this.physics.add.existing(hitbox);
-    
-          const offsetX = 3;
-          const offsetY = 6;
-    
-          if (hitbox.body) {
-            const body = hitbox.body as Phaser.Physics.Arcade.Body;
-            body.setSize(tile.width - offsetX * 2, tile.height - offsetY);
-            body.setOffset(offsetX, 0);
-          }
-    
-          hitbox.setData('spikeDirection', 'top');
-          this.spikeZones.add(hitbox);
-        }
-      });
-    
-      // SPIKES BOTTOM
-      const spikesBot = this.spikeLayer.getTilesWithin().filter(tile => tile.index === 52);
-      spikesBot.forEach(tile => {
-        const hitbox = this.add.zone(tile.getCenterX(), tile.getCenterY(), tile.width, tile.height);
-        this.physics.add.existing(hitbox);
-    
-        const offsetX = 3;
-        const offsetY = 6;
-    
-        if (hitbox.body) {
-          const body = hitbox.body as Phaser.Physics.Arcade.Body;
-          body.setSize(tile.width - offsetX * 2, tile.height - offsetY);
-          body.setOffset(offsetX, offsetY);
-        }
-    
-        hitbox.setData('spikeDirection', 'bottom');
-        this.spikeZones.add(hitbox);
-      });
-    
-        // SPIKES LEFT
-        const spikesLeft = this.spikeLayer.getTilesWithin().filter(tile => tile.index === 38);
-        spikesLeft.forEach(tile => {
-          const reducedWidth = 12;
-          const reducedHeight = tile.height - 3;
-        
-          const hitboxX = tile.getCenterX() - (tile.width - reducedWidth) / 2;
-          const hitboxY = tile.getCenterY();
-        
-          const hitbox = this.add.zone(hitboxX, hitboxY, reducedWidth, reducedHeight);
-          this.physics.add.existing(hitbox);
-        
-          const body = hitbox.body as Phaser.Physics.Arcade.Body;
-          body.setAllowGravity(false);
-          body.setImmovable(true);
-          body.setSize(reducedWidth, reducedHeight);
-          body.setOffset(0, 0); 
-        
-          hitbox.setData('spikeDirection', 'left');
-          this.spikeZones.add(hitbox);
-        });
-
-        // SPIKES RIGHT
-        const spikesRight = this.spikeLayer.getTilesWithin().filter(tile => tile.index === 53);
-        spikesRight.forEach(tile => {
-          const reducedWidth = 12;
-          const reducedHeight = tile.height - 3;
-        
-          const hitboxX = tile.getCenterX() + (tile.width - reducedWidth) / 2;
-          const hitboxY = tile.getCenterY();
-        
-          const hitbox = this.add.zone(hitboxX, hitboxY, reducedWidth, reducedHeight);
-          this.physics.add.existing(hitbox);
-        
-          const body = hitbox.body as Phaser.Physics.Arcade.Body;
-          body.setAllowGravity(false);
-          body.setImmovable(true);
-          body.setSize(reducedWidth, reducedHeight);
-          body.setOffset(0, 0);
-        
-          hitbox.setData('spikeDirection', 'right');
-          this.spikeZones.add(hitbox);
-        });
-    
-    } catch (err) {
-      console.log(err);
+    if(this.spikeLayer)
+    {
+      spikesInit(this.spikeLayer, this.player, this)
     }
-    
-
-    this.spikeZones.getChildren().forEach((spike) => {
-      const body = spike.body;
-      if (body && body instanceof Phaser.Physics.Arcade.Body && body.setImmovable) {
-        body.setImmovable(true);
-      }
-    });
-    
+ 
      // ADD SPRITE BOXS AND BARILS REMOVE TILE
     try 
     {
@@ -397,19 +313,19 @@ export class Start extends Phaser.Scene {
         this.canons.add(canonBoucle);
     }
 
-    this.physics.add.collider(this.player, this.spikeZones, (player, hitbox) => {
-      const p = player as Player;
-      const zone = hitbox as Phaser.GameObjects.Zone;
-    
-      const knockbackForce = 300;
-    
-      const rawDir = zone.getData('spikeDirection');
-      const isValidDirection = ['top', 'bottom', 'left', 'right'].includes(rawDir);
-    
-      if (isValidDirection) {
-        p.knockBack(knockbackForce, rawDir as 'top' | 'bottom' | 'left' | 'right', 3);
-      }
-    });
+    // this.physics.add.collider(this.player, this.spikeZones, (player, hitbox) => {
+    //   const p = player as Player;
+    //   const zone = hitbox as Phaser.GameObjects.Zone;
+    // 
+    //   const knockbackForce = 300;
+    // 
+    //   const rawDir = zone.getData('spikeDirection');
+    //   const isValidDirection = ['top', 'bottom', 'left', 'right'].includes(rawDir);
+    // 
+    //   if (isValidDirection) {
+    //     p.knockBack(knockbackForce, rawDir as 'top' | 'bottom' | 'left' | 'right', 3);
+    //   }
+    // });
 
     const platform = new MovingPlatform(this, 725, 150, 'movingPlatform', 200, 200, false )
     this.physics.add.collider(this.player, platform);

@@ -59,18 +59,26 @@ export default class PlayerController
         const coins = this.player.coins;
         const speed = this.player.speed;
 
-        if(coins >= 20 && coins < 50 && speed !== 175)
+        if(this.player.playerBody.blocked.right || this.player.playerBody.blocked.left)
         {
-            this.player.speed = 175;
-        } 
-        else if(coins >= 50 && coins < 100 && speed !== 200) 
-        {
-            this.player.speed = 200;
-        } 
-        else if(coins >= 100 && speed !== 225)
-        {
-            this.player.speed  = 225;
+          this.player.speed = 150;
         }
+        else
+        {
+          if(coins >= 20 && coins < 50 && speed !== 175)
+          {
+              this.player.speed = 175;
+          } 
+          else if(coins >= 50 && coins < 100 && speed !== 200) 
+          {
+              this.player.speed = 200;
+          } 
+          else if(coins >= 100 && speed !== 225 )
+          {
+              this.player.speed  = 225;
+          }          
+        }
+
     }
 
     private movingSystem() 
