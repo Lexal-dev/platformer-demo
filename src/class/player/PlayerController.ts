@@ -118,7 +118,7 @@ export default class PlayerController
           this.player.playerBody.velocity.x = 150 * direction;
           
   
-          this.player.scene.time.delayedCall(200, () => {
+          this.player.scene.time.delayedCall(120, () => {
             this.player.touchActive = true;
             this.player.onWallJump = false;
           });
@@ -216,18 +216,18 @@ export default class PlayerController
                 this.player.dashUp = false;
                 this.player.isDashing = true;
     
-                const direction = this.player.flipX ? (canDashSlide ? 1 : -1) : 1;
+                const direction = canDashSlide ? (this.player.playerBody.blocked.left ? 1 : -1) : (this.player.flipX ? -1 : 1);
                 const initialVelocityY = this.player.playerBody.velocity.y;
     
                 this.player.setVelocityX(350 * direction);
                 this.player.setVelocityY(0);
                 this.player.playerBody.allowGravity = false;
+
                 this.scene.sound.play('dashSound', {
                   volume: 0.3,
                   rate: 1
                 });
                 
-    
                 this.player.scene.time.delayedCall(250, () => {
                     this.player.setVelocityX(0);
                     this.player.setVelocityY(initialVelocityY < 0 ? 0 : initialVelocityY);
@@ -251,7 +251,7 @@ export default class PlayerController
     
     private resetDash() 
     {
-        this.player.scene.time.delayedCall(2000, () => {
+        this.player.scene.time.delayedCall(1200, () => {
             this.player.dashUp = true;
             console.log("dash reset !")
         });
