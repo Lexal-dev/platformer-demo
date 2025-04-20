@@ -20,8 +20,8 @@ export default class KingSlime extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
-        this.lifePoint = 100;
-        this.maxLifePoint = 100;
+        this.lifePoint = 500;
+        this.maxLifePoint = 500;
         this.isNpc = true;
         this.onGround = false;
         this.hasHit = false;
