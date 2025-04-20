@@ -74,7 +74,29 @@ function createBoxsAnimation(scene: Phaser.Scene)
     }
 }
 
-function createJumperAnimation(scene: Phaser.Scene)
+function createJumperAnimation(scene: Phaser.Scene) {
+    if (!scene.anims.exists('jumperFull')) {
+        scene.anims.create({  
+            key: 'jumperFull',
+            frames: scene.anims.generateFrameNumbers('jumper', { start: 0, end: 17 }),
+            frameRate: 30,
+            repeat: 0
+        });
+        console.log("jumperFull created");
+    }
+
+    if (!scene.anims.exists('jumperOnCrouch')) {
+        scene.anims.create({  
+            key: 'jumperOnCrouch',
+            frames: scene.anims.generateFrameNumbers('jumper', { start: 0, end: 6 }),
+            frameRate: 30,
+            repeat: 0
+        });
+        console.log("jumperOnCrouch created");
+    }
+}
+
+function createJumperKingAnimation(scene: Phaser.Scene)
 {
     if (!scene.anims.exists('kingJumper')) {
         scene.anims.create({  
@@ -93,4 +115,4 @@ function createJumperAnimation(scene: Phaser.Scene)
 
 
 
-export { createCanonsAnimation, createCoinsAnimation, createBarilsAnimation, createBoxsAnimation, createJumperAnimation };
+export { createCanonsAnimation, createCoinsAnimation, createBarilsAnimation, createBoxsAnimation, createJumperAnimation, createJumperKingAnimation };

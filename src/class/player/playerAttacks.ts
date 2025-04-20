@@ -19,7 +19,9 @@ export default class PlayerAttacks
         this.scene = scene;
         this.fireball = {
             fireCharge: false,
-            spellChargeTimer: null
+            spellChargeTimer: null,
+            fireballCost : 5,
+            chargedFireballCost : 10
           };
     }
 
@@ -45,11 +47,11 @@ export default class PlayerAttacks
         if (Phaser.Input.Keyboard.JustUp(this.keys.SPELL1)) {
             const currentMana = this.player.manaPoint;
         
-            if (this.fireball.fireCharge && currentMana >= 7) {
-                this.player.useMana = 7; 
+            if (this.fireball.fireCharge && currentMana >= this.fireball.chargedFireballCost) {
+                this.player.useMana = this.fireball.chargedFireballCost; 
                 this.fireBallShoot(true);
-            } else if (currentMana >= 5 && !this.fireball.fireCharge) {
-                this.player.useMana = 5;
+            } else if (currentMana >= this.fireball.fireballCost && !this.fireball.fireCharge) {
+                this.player.useMana = this.fireball.fireballCost;
                 this.fireBallShoot(false);
                 console.log("Mana:", this.player.manaPoint);
             }
@@ -71,5 +73,18 @@ export default class PlayerAttacks
     private fireBallShoot(charged: boolean) 
     {
         new Fireball(this.scene as Start, this.player.x, this.player.y, 500, this.player.flipX ? -1 : 1, charged);
+    }
+
+    get isChargingFireball(): boolean {
+        return this.keys.SPELL1.isDown;
+    }
+    
+    get isFireballCharged(): boolean {
+        return this.fireball.fireCharge;
+    }
+
+    get chargedFireballCost():number
+    {
+        return this.fireball.chargedFireballCost
     }
 }

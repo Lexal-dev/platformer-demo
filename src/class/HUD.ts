@@ -79,7 +79,7 @@ export default class HUD extends Phaser.Scene {
 
         // KING SLIME HP
         if (this.kingSlime) {
-            this.maxKingLife = 500;
+            this.maxKingLife = this.kingSlime.maxLifePoint;
             this.currentKingLife = this.kingSlime.lifePoint;
 
             const barWidth = 1200;

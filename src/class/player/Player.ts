@@ -29,7 +29,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.keys = keyManager.getKeys();   
         this.playerController = new PlayerController(this, this.keys, scene as Start)
         this.playerAttacks = new PlayerAttacks(this, this.keys, scene as Start)
-        this.playerAnimations = new PlayerAnimations(this, scene as Start);
+        this.playerAnimations = new PlayerAnimations(this, scene as Start, this.playerAttacks);
         this.hitting = false;
 
         this.#movement = {
@@ -56,9 +56,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
           manaPoint: 20,
           manaPointMax: 20,
         };
-
-
-        this.anims.play('idle', true);
     }
   
     update():void 

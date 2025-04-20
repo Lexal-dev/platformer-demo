@@ -5,7 +5,7 @@ import Camera from '@/class/Camera';
 import MovingPlatform from '@/platforms/MovingPlatforms';
 import { createPlayerAnimations } from '@/animations/player'; 
 import { createLayerWithHandling } from '@/utils/tilemap-helper';
-import {createCoinsAnimation, createCanonsAnimation, createBarilsAnimation, createBoxsAnimation, createJumperAnimation} from '@/animations/objects';
+import {createCoinsAnimation, createCanonsAnimation, createBarilsAnimation, createBoxsAnimation, createJumperAnimation, createJumperKingAnimation} from '@/animations/objects';
 import {createMapAnimations} from '@/animations/map';
 import createEnemysAnimations from '@/animations/enemies';
 
@@ -16,13 +16,15 @@ import Canon from '@/class/traps/Canon';
 import Slime from '@/class/enemies/Slimes';
 import Ghost from '@/class/enemies/Ghost';
 import KingSlime from '@/class/enemies/KingSlime';
-import Jumper from '@/class/objects/Jumper';
 import spikesInit from '@/tilemapSetup/spikesMap';
 import {frontOfPlayerLayerInit, coinsInit} from '@/tilemapSetup/objectsMap';
 import waterInit from '@/tilemapSetup/waterMap';
+import JumperKing from '@/class/objects/JumperKing';
+import Jumper from '@/class/objects/Jumper';
 
 export class Start extends Phaser.Scene {
   private backgroundMusic!: Phaser.Sound.BaseSound;
+  private bossMusic!: Phaser.Sound.BaseSound;
   private groundLayer: Phaser.Tilemaps.TilemapLayer | null = null;
   private frontOfPlayerLayer: Phaser.Tilemaps.TilemapLayer | null = null;
   private spikeLayer :Phaser.Tilemaps.TilemapLayer | null = null; 
@@ -45,6 +47,7 @@ export class Start extends Phaser.Scene {
   enemiesProjectile!: Phaser.Physics.Arcade.Group;
   kingSlime!: Phaser.Physics.Arcade.Sprite | null;
   bossActivated!: boolean;
+  kingSlimeDead: boolean = false;
   restart!: boolean;
   
   constructor() {
@@ -78,6 +81,8 @@ export class Start extends Phaser.Scene {
     // Load player images and player attack animations
     this.load.spritesheet('player', 'assets/player/sprite-idle-sheet.png', { frameWidth: 18, frameHeight: 32 });
     this.load.spritesheet('playerRun', 'assets/player/sprite-run-sheet.png', { frameWidth: 18, frameHeight: 32 });
+    this.load.spritesheet('playerCrouch', 'assets/player/sprite-crouch-sheet.png', { frameWidth: 18, frameHeight: 32 });
+    this.load.spritesheet('playerJump', 'assets/player/sprite-jump-sheet.png', { frameWidth: 18, frameHeight: 32 });
     this.load.spritesheet('slashAttack', 'assets/player/attacks/slash-sheet.png', {frameWidth: 31, frameHeight:23});
     this.load.spritesheet('fireball', 'assets/player/attacks/fireball-sheet.png', {frameWidth: 16, frameHeight:16});
 
@@ -88,6 +93,7 @@ export class Start extends Phaser.Scene {
     this.load.spritesheet('kingSlime', 'assets/enemies/kingSlime-sheet.png', { frameWidth: 56, frameHeight: 61 });
     this.load.spritesheet('kingWave', 'assets/enemies/attacks/kingWave-sheet.png', {frameWidth: 18, frameHeight:16});
     this.load.spritesheet('kingJumper','assets/tilesets/kingJumper-sheet.png',{ frameWidth: 11, frameHeight: 18 });
+    this.load.spritesheet('jumper','assets/tilesets/jumper-sheet.png',{ frameWidth: 11, frameHeight: 10 });
 
 
     //Sounds
@@ -110,6 +116,7 @@ export class Start extends Phaser.Scene {
 
     // Music
     this.load.audio('backgroundMusic', 'assets/musics/spooky-Island.mp3');
+    this.load.audio('bossMusic', 'assets/musics/funky-and-jazzy-gang.mp3');
   }
 
   create() {
@@ -131,6 +138,11 @@ export class Start extends Phaser.Scene {
     } else {
       console.log("La musique est déjà en cours de lecture.");
     }
+
+    this.bossMusic = this.sound.add('bossMusic', {
+      volume: 0.6,
+      loop: true
+    })
 
     // tilesets loaded
     const groundTileset = map.addTilesetImage('ground', 'ground');
@@ -175,6 +187,7 @@ export class Start extends Phaser.Scene {
     createMapAnimations(this);
     createCanonsAnimation(this);
     createEnemysAnimations(this);
+    createJumperKingAnimation(this);
     createJumperAnimation(this);
     createPlayerAnimations(this);
 
@@ -208,7 +221,6 @@ export class Start extends Phaser.Scene {
         this.camera = new Camera(this, this.player, this.groundLayer)
     }
 
-    // Init spike, frontOfPlayer, coins and water sprite and hitbox
     if(this.spikeLayer && this.frontOfPlayerLayer && this.coinsLayer && this.waterLayer)
     {
       spikesInit(this.spikeLayer, this.player, this)
@@ -271,8 +283,8 @@ export class Start extends Phaser.Scene {
       this.physics.add.collider(this.ghosts, this.ghosts);
     }
 
-    const jumper = new Jumper(this, 250, 200, this.player);
 
+    const jumper = new Jumper(this, 250, 367, this.player);
     // create collider
     if(this.groundLayer){      
       this.physics.add.collider(this.player, this.groundLayer, () => {
@@ -310,7 +322,17 @@ export class Start extends Phaser.Scene {
     if (this.kingSlime !== null && this.kingSlime.body) {
       this.kingSlime.update();
     }
-
+    if (this.kingSlime && !this.kingSlime.active && !this.kingSlimeDead && this.groundLayer) {
+      this.kingSlimeDead = true;
+      this.bossMusic.stop();
+      this.backgroundMusic.play({
+          volume: 0.6,
+          loop: true
+      });
+    
+      const jumperKing = new JumperKing(this, this.kingSlime.x, this.kingSlime.y, this.player, this.groundLayer);
+      this.physics.add.collider(jumperKing, this.groundLayer);
+    }
     if (this.player) {
       this.player.update();
       const wasTouchingWater = this.isTouchingWater;
@@ -370,6 +392,13 @@ export class Start extends Phaser.Scene {
           {
             this.kingSlime =  new KingSlime(this, 420, 450, this.groundLayer, this.player);
             this.kingSlime.setDepth(1);
+            this.backgroundMusic.stop();
+
+            // Attend 2 secondes avant de lancer la musique de boss
+
+            this.bossMusic.play();
+                
+     
           }
         
         this.bossActivated = true;

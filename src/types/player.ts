@@ -27,4 +27,6 @@ export interface MovementState {
 export interface FireballState {
     fireCharge: boolean;
     spellChargeTimer: Phaser.Time.TimerEvent | null;
+    fireballCost : number,
+    chargedFireballCost : number
 }
