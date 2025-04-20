@@ -1,11 +1,7 @@
 import Player from "@/class/player/Player";
 import { Start } from "@/phaser/scenes/Start";
 
-export default function spikesInit(
-  spikeLayer: Phaser.Tilemaps.TilemapLayer,
-  player: Player,
-  scene: Start
-) {
+export default function spikesInit(spikeLayer: Phaser.Tilemaps.TilemapLayer, player: Player, scene: Start) {
   try 
   {
     if (!spikeLayer) return;

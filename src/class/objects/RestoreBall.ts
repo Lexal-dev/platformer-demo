@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import Player from '../player/Player';
+import Player from '@/class/player/Player';
 
 type RestoreType = 'life' | 'mana';
 
@@ -74,4 +74,6 @@ export default class RestoreBall extends Phaser.Physics.Arcade.Sprite {
             this.destroy();
         }
     }
+
+
 }

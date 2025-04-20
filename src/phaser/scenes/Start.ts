@@ -1,9 +1,7 @@
 import * as Phaser from 'phaser';
 import Player from  '@/class/player/Player';
 import Camera from '@/class/Camera';
-import Baril from '@/class/objects/Baril';
-import Box from '@/class/objects/Box';
-import Coin from '@/class/objects/Coin';
+
 import MovingPlatform from '@/platforms/MovingPlatforms';
 import { createPlayerAnimations } from '@/animations/player'; 
 import { createLayerWithHandling } from '@/utils/tilemap-helper';
@@ -20,7 +18,8 @@ import Ghost from '@/class/enemies/Ghost';
 import KingSlime from '@/class/enemies/KingSlime';
 import Jumper from '@/class/objects/Jumper';
 import spikesInit from '@/tilemapSetup/spikesMap';
-import frontOfPlayerLayerInit from '@/tilemapSetup/objectsMap';
+import {frontOfPlayerLayerInit, coinsInit} from '@/tilemapSetup/objectsMap';
+import waterInit from '@/tilemapSetup/waterMap';
 
 export class Start extends Phaser.Scene {
   private backgroundMusic!: Phaser.Sound.BaseSound;
@@ -53,35 +52,43 @@ export class Start extends Phaser.Scene {
   }
 
   preload() {
+    // Load the map .json file
     this.load.tilemapTiledJSON('start', '/assets/map/Start.tmj');
 
+    // Load the tile images for the map
     this.load.image('ground', '/assets/tilesets/ground.png');
     this.load.image('barils-sheet-Sheet', '/assets/tilesets/barils-sheet.png');
     this.load.image('box', '/assets/tilesets/box-sheet.png');
     this.load.image('coin-sheet', 'assets/tilesets/coin-sheet.png');
-
     this.load.image('manaBall', 'assets/tilesets/manaBall.png');
     this.load.image('lifeBall', 'assets/tilesets/lifeBall.png');
 
+    // Load map elements (indestructible objects)
     this.load.spritesheet('waterAnimBot','assets/tilesets/water-sheet-bot.png',{ frameWidth: 18, frameHeight: 18 });
     this.load.spritesheet('waterAnimTop','assets/tilesets/water-sheet-top.png',{ frameWidth: 18, frameHeight: 18 });
+    this.load.spritesheet('canonSheet','assets/tilesets/canon-sheet.png',{ frameWidth: 18, frameHeight: 18 });
+    this.load.spritesheet('diskSheet','assets/tilesets/disk-sheet.png',{ frameWidth: 18, frameHeight: 18 }); 
 
+    // Load map elements (destructible objects and collectibles)
     this.load.spritesheet('destroyBaril', 'assets/tilesets/barils-sheet.png', {frameWidth: 16, frameHeight:22});
     this.load.spritesheet('destroyBox', 'assets/tilesets/box-sheet.png', {frameWidth: 18, frameHeight:18});
     this.load.spritesheet('coin', 'assets/tilesets/coin-sheet.png', { frameWidth: 18, frameHeight: 18 });
-    this.load.spritesheet('canonSheet','assets/tilesets/canon-sheet.png',{ frameWidth: 18, frameHeight: 18 });
-    this.load.spritesheet('diskSheet','assets/tilesets/disk-sheet.png',{ frameWidth: 18, frameHeight: 18 });
+    this.load.spritesheet('movingPlatform','assets/tilesets/movingPlatform.png',{ frameWidth: 54, frameHeight: 18 });
+
+    // Load player images and player attack animations
     this.load.spritesheet('player', 'assets/player/sprite-idle-sheet.png', { frameWidth: 18, frameHeight: 32 });
     this.load.spritesheet('playerRun', 'assets/player/sprite-run-sheet.png', { frameWidth: 18, frameHeight: 32 });
     this.load.spritesheet('slashAttack', 'assets/player/attacks/slash-sheet.png', {frameWidth: 31, frameHeight:23});
     this.load.spritesheet('fireball', 'assets/player/attacks/fireball-sheet.png', {frameWidth: 16, frameHeight:16});
+
+    // Load player sprites and attack animations
     this.load.spritesheet('slimes', 'assets/enemies/slime-sheet.png', { frameWidth: 15, frameHeight: 13 });
     this.load.spritesheet('ghosts', 'assets/enemies/ghost-sheet.png', { frameWidth: 16, frameHeight: 15 });
-    this.load.spritesheet('kingSlime', 'assets/enemies/kingSlime-sheet.png', { frameWidth: 56, frameHeight: 61 });
     this.load.spritesheet('ghostBall', 'assets/enemies/attacks/ghostBall-sheet.png', {frameWidth: 16, frameHeight:16});
+    this.load.spritesheet('kingSlime', 'assets/enemies/kingSlime-sheet.png', { frameWidth: 56, frameHeight: 61 });
     this.load.spritesheet('kingWave', 'assets/enemies/attacks/kingWave-sheet.png', {frameWidth: 18, frameHeight:16});
-    this.load.spritesheet('movingPlatform','assets/tilesets/movingPlatform.png',{ frameWidth: 54, frameHeight: 18 });
     this.load.spritesheet('kingJumper','assets/tilesets/kingJumper-sheet.png',{ frameWidth: 11, frameHeight: 18 });
+
 
     //Sounds
     this.load.audio('coinSound', 'assets/sounds/coin.wav');
@@ -106,10 +113,13 @@ export class Start extends Phaser.Scene {
   }
 
   create() {
+
+    // create KeyManager and retrieve key mappings
     this.keyManager = new KeyManager(this);
     this.keys = this.keyManager.getKeys();
     const map = this.make.tilemap({ key: 'start' });
     
+    // create background music
     if (!this.backgroundMusic || !this.backgroundMusic.isPlaying) {
       if (!this.backgroundMusic) {
         this.backgroundMusic = this.sound.add('backgroundMusic', {
@@ -117,13 +127,10 @@ export class Start extends Phaser.Scene {
           loop: true
         });
       }
-    
       this.backgroundMusic.play();
     } else {
       console.log("La musique est déjà en cours de lecture.");
     }
-
-    
 
     // tilesets loaded
     const groundTileset = map.addTilesetImage('ground', 'ground');
@@ -137,22 +144,31 @@ export class Start extends Phaser.Scene {
     const validBarilsTileset = barilsTileset ? barilsTileset : null;
     const validCoinsTileset = coinsTileset ? coinsTileset : null;
 
-    // GROUND LAYER && BACKGROUND LAYER && EXIT LAYER
+    // Validate layers and set depth
     if (validGroundTileset) {
       this.groundLayer = createLayerWithHandling(map, 'ground', [validGroundTileset], -9);
+      this.spikeLayer = createLayerWithHandling(map, 'spike', [validGroundTileset], 0);
       createLayerWithHandling(map, 'background', [validGroundTileset], -10);
       this.waterLayer = createLayerWithHandling(map, 'water', [validGroundTileset], 11);
       createLayerWithHandling(map, 'exit', [validGroundTileset], 5);
       createLayerWithHandling(map, 'vine', [validGroundTileset], 4);
       createLayerWithHandling(map, 'grass', [validGroundTileset], 3);
-      this.spikeLayer = createLayerWithHandling(map, 'spike', [validGroundTileset], 0);
+      
     }
-
-    // FRONT OF PLAYER LAYER
+    // validate for frontOfPlayer layer
     const tilesetsToUse = [validGroundTileset, validBarilsTileset, validBoxTileset].filter(
       (tileset): tileset is Phaser.Tilemaps.Tileset => tileset !== null
     );
+    // create front of player
+    if (tilesetsToUse.length > 0) {
+      this.frontOfPlayerLayer = createLayerWithHandling(map, 'frontOfPlayer', tilesetsToUse, 5);
+    }    
+    // validate for coinS LAYER
+    if (validCoinsTileset) {
+      this.coinsLayer = createLayerWithHandling(map, 'coin', [validCoinsTileset], 6);
+    }
 
+    // create animations
     createBarilsAnimation(this);
     createBoxsAnimation(this);
     createCoinsAnimation(this);
@@ -160,148 +176,64 @@ export class Start extends Phaser.Scene {
     createCanonsAnimation(this);
     createEnemysAnimations(this);
     createJumperAnimation(this);
+    createPlayerAnimations(this);
 
-    this.barils = this.physics.add.group({
-      runChildUpdate: true,
-    });
-    this.boxs = this.physics.add.group({
-      runChildUpdate: true,
-    });
-    this.projectiles = this.physics.add.group({
-      runChildUpdate: true 
-    });
-    this.canons = this.physics.add.group()
+    // --- create groups ---
+    // objects and consummable
+    this.barils = this.physics.add.group({ runChildUpdate: true });
+    this.boxs = this.physics.add.group({ runChildUpdate: true });
     this.coins = this.physics.add.group();
     this.restoreBalls = this.physics.add.group();
-    this.waterTilesGroup = this.physics.add.staticGroup();
 
+    //trap
+    this.canons = this.physics.add.group()
+    this.projectiles = this.physics.add.group({ runChildUpdate: true });
+    
+    // enemies and enemies projectiles
     this.slimes = this.physics.add.group();
-    this.ghosts = this.physics.add.group({
-      runChildUpdate: true 
-    });
-    this.enemiesProjectile = this.physics.add.group({
-      runChildUpdate: true 
-    });
+    this.ghosts = this.physics.add.group({ runChildUpdate: true });
+    this.enemiesProjectile = this.physics.add.group({ runChildUpdate: true });
+
     this.kingSlime = null
+    this.waterTilesGroup = this.physics.add.staticGroup();
     this.bossActivated = false;
     this.restart = false;
 
-    if (tilesetsToUse.length > 0) {
-      this.frontOfPlayerLayer = createLayerWithHandling(map, 'frontOfPlayer', tilesetsToUse, 5);
-    }
-    
-    // COINS LAYER
-    if (validCoinsTileset) {
-      this.coinsLayer = createLayerWithHandling(map, 'coin', [validCoinsTileset], 6);
-    }
-
     // PLAYER
-    createPlayerAnimations(this);
-    this.keyManager = new KeyManager(this);
-    this.player = new Player(this, 1350, 150, this.keyManager);
-
+    this.player = new Player(this, 50, 938, this.keyManager);
 
     //CAMERA
-    if (this.groundLayer) {
-
+    if (this.groundLayer) 
+    {
         this.camera = new Camera(this, this.player, this.groundLayer)
     }
 
-    if(this.spikeLayer && this.frontOfPlayerLayer)
+    // Init spike, frontOfPlayer, coins and water sprite and hitbox
+    if(this.spikeLayer && this.frontOfPlayerLayer && this.coinsLayer && this.waterLayer)
     {
       spikesInit(this.spikeLayer, this.player, this)
       frontOfPlayerLayerInit(this.frontOfPlayerLayer, this)
+      coinsInit(this.coinsLayer, this)
+      waterInit(this.waterLayer, this, this.waterTilesGroup)
     }
  
-    
- // ADD SPRITE COINS REMOVE TILE
-    try
-    {
-     if(!this.coinsLayer) return;
-     this.coinsLayer.forEachTile(tile => {
-      if (tile.index === 61 && this.coinsLayer) 
-      { 
-          //coins
-          const x = tile.pixelX + 9;
-          const y = tile.pixelY;
-          const coin = new Coin(this, x, y + 8);
-          this.coins.add(coin);
-          this.coinsLayer.removeTileAt(tile.x, tile.y);
-      }
-      this.coins.setDepth(8)
-      });
-    }
-    catch (err)
-    {
-      console.log(err)
-    }
-    
-
-   // ADD SPRITE wATER REMOVE TILE
-     try 
-     {
-       if(!this.waterLayer) return;
-       this.waterLayer.forEachTile(tile=> {
-         if (tile.index === 36 && this.waterLayer) {
-             //TOP
-             const x = tile.getCenterX();
-             const y = tile.getCenterY();
-             this.waterLayer.removeTileAt(tile.x, tile.y);
-             const waterTile = this.add.sprite(x, y, 'waterAnimTop');
-             waterTile.play('waterAnimTop', true);
-             this.waterTilesGroup.add(waterTile);
-             waterTile.setDepth(3)
-             waterTile.setAlpha(0.65)
-         }
-   
-       if(tile.index === 51 && this.waterLayer)
-       {
-        //BOT
-        const x = tile.getCenterX();
-        const y = tile.getCenterY();
-        this.waterLayer.removeTileAt(tile.x, tile.y);
-        const waterTile = this.add.sprite(x, y, 'waterAnimBot');
-        waterTile.play('waterAnimBot', true);
-        this.waterTilesGroup.add(waterTile);
-        waterTile.setDepth(3)
-        waterTile.setAlpha(0.65)
-       }
-     });
-     } 
-     catch (err)
-     {
-       console.log(err);
-     }
-
+    // create traps
     const canon1 = new Canon(this, 1503, 237, true, true, 3000, this.player);
     this.canons.add(canon1);
-
     const canon2 = new Canon(this, 1190, 45, true, false, 3000, this.player);
     canon2.setFrame(3)
     this.canons.add(canon2);
-
     for (let i = 0; i < 2; i++) { 
         const canonBoucle = new Canon(this, 1300 + (125 * i), 315, false, false, 3000, this.player);
         canonBoucle.setFrame(3) 
         this.canons.add(canonBoucle);
     }
 
-    // this.physics.add.collider(this.player, this.spikeZones, (player, hitbox) => {
-    //   const p = player as Player;
-    //   const zone = hitbox as Phaser.GameObjects.Zone;
-    // 
-    //   const knockbackForce = 300;
-    // 
-    //   const rawDir = zone.getData('spikeDirection');
-    //   const isValidDirection = ['top', 'bottom', 'left', 'right'].includes(rawDir);
-    // 
-    //   if (isValidDirection) {
-    //     p.knockBack(knockbackForce, rawDir as 'top' | 'bottom' | 'left' | 'right', 3);
-    //   }
-    // });
-
+    // create platform and collider
     const platform = new MovingPlatform(this, 725, 150, 'movingPlatform', 200, 200, false )
     this.physics.add.collider(this.player, platform);
+
+    // create slimes
     if(this.groundLayer)
     {
 
@@ -325,24 +257,23 @@ export class Start extends Phaser.Scene {
 
     }
 
-       if(this.groundLayer)
-      {
-
-        for (let i = 0; i < 2; i++) {
-          const xPosition = (i === 0) ? 50 : 790;
-          const ghost = new Ghost(this, xPosition, 550, 100, 'Emilien', this.player, this.groundLayer);
-          ghost.name = "Emilien-" + i;
-          this.ghosts.add(ghost);
-        }
-
-        const ghost1 = new Ghost(this, 910, 980, 100, 'Henry', this.player, this.groundLayer);
-        this.ghosts.add(ghost1);
-
-        this.physics.add.collider(this.ghosts, this.ghosts);
+    // create ghosts
+    if(this.groundLayer)
+    {
+      for (let i = 0; i < 2; i++) {
+        const xPosition = (i === 0) ? 50 : 790;
+        const ghost = new Ghost(this, xPosition, 550, 100, 'Emilien', this.player, this.groundLayer);
+        ghost.name = "Emilien-" + i;
+        this.ghosts.add(ghost);
       }
+      const ghost1 = new Ghost(this, 910, 980, 100, 'Henry', this.player, this.groundLayer);
+      this.ghosts.add(ghost1);
+      this.physics.add.collider(this.ghosts, this.ghosts);
+    }
 
     const jumper = new Jumper(this, 250, 200, this.player);
 
+    // create collider
     if(this.groundLayer){      
       this.physics.add.collider(this.player, this.groundLayer, () => {
       });
@@ -358,6 +289,12 @@ export class Start extends Phaser.Scene {
     }
       // HUD
       this.scene.launch('HUD', { player: this.player});
+
+      //const zone = this.add.zone(400, 300, 100, 100)
+      //this.physics.world.enable(zone);
+      //this.physics.add.overlap(this.player, zone, () => {
+      //  console.log("le joueur est dans la nezo")
+      //})
   }
 
   update() 
@@ -378,12 +315,10 @@ export class Start extends Phaser.Scene {
       this.player.update();
       const wasTouchingWater = this.isTouchingWater;
       this.isTouchingWater = false;
-      // Vérifie s'il touche l'eau
       this.physics.world.overlap(this.player, this.waterTilesGroup, () => {
         this.isTouchingWater = true;
       });
 
-      // Joue le son si le joueur vient d'entrer dans l'eau
       if (!wasTouchingWater && this.isTouchingWater) {
         this.sound.play('splashWaterSound', {
           volume: 0.5,
@@ -391,7 +326,6 @@ export class Start extends Phaser.Scene {
         });
       }
 
-      // Mets à jour l’état de l’eau
       if (this.isTouchingWater !== wasTouchingWater) {
         this.player.onWater = this.isTouchingWater;
 }
