@@ -1,11 +1,13 @@
 import Player from "@/class/player/Player";
 
-export default class Jumper extends Phaser.Physics.Arcade.Sprite {
+export default class Jumper extends Phaser.Physics.Arcade.Sprite 
+{
     private player: Player;
     private startY: number;
     private isLocked: boolean = false;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, player: Player) {
+    constructor(scene: Phaser.Scene, x: number, y: number, player: Player) 
+    {
         super(scene, x, y, 'jumper', 0);
 
         scene.add.existing(this);
@@ -22,14 +24,10 @@ export default class Jumper extends Phaser.Physics.Arcade.Sprite {
         scene.physics.add.collider(this, this.player);
     }
 
-    update() {
-        if (
-            this.body &&
-            this.player.playerBody &&
-            this.player.playerBody.touching.down &&
-            this.body.touching.up &&
-            !this.isLocked
-        ) {
+    update() 
+    {
+        if (this.body && this.player.playerBody && this.player.playerBody.touching.down && this.body.touching.up && !this.isLocked) 
+        {
             const newHeight = this.height * 0.35;  
             this.body.setSize(this.width, newHeight); 
             this.body.setOffset(0, this.height - newHeight); 
@@ -37,19 +35,24 @@ export default class Jumper extends Phaser.Physics.Arcade.Sprite {
         
             this.isLocked = true;
         
-            const checkRelease = () => {
+            const checkRelease = () => 
+            {
                 const isStillTouching = this.player.playerBody.touching.down && this.body?.touching.up;
 
-                if (!isStillTouching ) {
+                if (!isStillTouching ) 
+                {
                     this.setFrame(0);
                     this.body?.setSize(this.width, this.height);
                     this.body?.setOffset(0, 0);
                     this.isLocked = false;
                     const spaceKey = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-                    if (spaceKey?.isDown) {
+                    if (spaceKey?.isDown) 
+                    {
                         this.player.forcedJump(-600);
                     }
-                } else {
+                } 
+                else 
+                {
                     this.scene.time.delayedCall(100, checkRelease);
                 }
             };

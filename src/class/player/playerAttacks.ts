@@ -17,7 +17,8 @@ export default class PlayerAttacks
         this.player = player;
         this.keys = keys;
         this.scene = scene;
-        this.fireball = {
+        this.fireball = 
+        {
             fireCharge: false,
             spellChargeTimer: null,
             fireballCost : 5,
@@ -33,30 +34,37 @@ export default class PlayerAttacks
 
     private attackSystem() 
     {
-        if (Phaser.Input.Keyboard.JustDown(this.keys.SPELL1)) {
+        if (Phaser.Input.Keyboard.JustDown(this.keys.SPELL1)) 
+        {
             this.fireball.fireCharge = false;
             this.fireball.spellChargeTimer = this.player.scene.time.delayedCall(1500, () => {
                 this.fireball.fireCharge = true;
             });
         }
     
-        if (Phaser.Input.Keyboard.JustUp(this.keys.ATK)) {
+        if (Phaser.Input.Keyboard.JustUp(this.keys.ATK)) 
+        {
             this.slashAttack();
         }
     
-        if (Phaser.Input.Keyboard.JustUp(this.keys.SPELL1)) {
+        if (Phaser.Input.Keyboard.JustUp(this.keys.SPELL1)) 
+        {
             const currentMana = this.player.manaPoint;
         
-            if (this.fireball.fireCharge && currentMana >= this.fireball.chargedFireballCost) {
+            if (this.fireball.fireCharge && currentMana >= this.fireball.chargedFireballCost) 
+            {
                 this.player.useMana = this.fireball.chargedFireballCost; 
                 this.fireBallShoot(true);
-            } else if (currentMana >= this.fireball.fireballCost && !this.fireball.fireCharge) {
+            }
+            else if (currentMana >= this.fireball.fireballCost && !this.fireball.fireCharge) 
+            {
                 this.player.useMana = this.fireball.fireballCost;
                 this.fireBallShoot(false);
                 console.log("Mana:", this.player.manaPoint);
             }
         
-            if (this.fireball.spellChargeTimer) {
+            if (this.fireball.spellChargeTimer) 
+            {
                 this.fireball.spellChargeTimer.remove(false);
                 this.fireball.spellChargeTimer = null;
             }
@@ -75,11 +83,13 @@ export default class PlayerAttacks
         new Fireball(this.scene as Start, this.player.x, this.player.y, 500, this.player.flipX ? -1 : 1, charged);
     }
 
-    get isChargingFireball(): boolean {
+    get isChargingFireball(): boolean 
+    {
         return this.keys.SPELL1.isDown;
     }
     
-    get isFireballCharged(): boolean {
+    get isFireballCharged(): boolean 
+    {
         return this.fireball.fireCharge;
     }
 

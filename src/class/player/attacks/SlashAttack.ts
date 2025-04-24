@@ -14,7 +14,8 @@ export default class SlashAttack extends Phaser.Physics.Arcade.Sprite {
     private damageOnHit: number;
 
 
-    constructor(scene:Start, x:number, y:number, direction:number) {
+    constructor(scene:Start, x:number, y:number, direction:number) 
+    {
         super(scene, x, y, 'slashAttack');
         scene.add.existing(this);
         scene.physics.add.existing(this);
@@ -35,12 +36,13 @@ export default class SlashAttack extends Phaser.Physics.Arcade.Sprite {
 
         if(this.body)
         {
-            this.body.setSize(31, 23); 
+            this.body.setSize(25, 16); 
             this.body.setOffset(0, 0);            
         }
 
         this.anims.play('slashAttack', true);
-        this.scene.sound.play('slashSound', {
+        this.scene.sound.play('slashSound', 
+        {
             volume: 0.3,
             rate: 1
         });
@@ -48,7 +50,8 @@ export default class SlashAttack extends Phaser.Physics.Arcade.Sprite {
 
         this.on('animationcomplete', this.onAnimationComplete, this);
 
-        this.scene.physics.add.overlap(this, scene.barils, (slashAttack, baril) => {
+        this.scene.physics.add.overlap(this, scene.barils, (slashAttack, baril) => 
+        {
             const sprite = baril as Baril;
             if (!this.touchedObjects.has(sprite) && sprite.body) 
                 {
@@ -57,7 +60,8 @@ export default class SlashAttack extends Phaser.Physics.Arcade.Sprite {
                 }
         });
 
-        this.scene.physics.add.overlap(this, scene.boxs, (slashAttack, box) => {
+        this.scene.physics.add.overlap(this, scene.boxs, (slashAttack, box) => 
+        {
             const sprite = box as Box;
             if (!this.touchedObjects.has(sprite) && sprite.body) 
                 {
@@ -65,45 +69,55 @@ export default class SlashAttack extends Phaser.Physics.Arcade.Sprite {
                     this.touchedObjects.add(sprite); 
                 }
         });
-        this.scene.physics.add.overlap(this, scene.slimes, (slashAttack, slime) => {
+        this.scene.physics.add.overlap(this, scene.slimes, (slashAttack, slime) => 
+        {
             const sprite = slime as Slime;
             const player = this.player as Player;
-            if (!this.touchedEnemies.has(sprite) && sprite.body) {
+            if (!this.touchedEnemies.has(sprite) && sprite.body) 
+            {
                 player.gainMana = 2;
-                console.log(player.gainMana + 2)
                 sprite.setTint(0xff0000);  
                 sprite.takeDamage(this.damageOnHit);  
                 this.touchedEnemies.add(sprite);
-                this.scene.time.delayedCall(200, () => {
+                this.scene.time.delayedCall(200, () => 
+                {
                     sprite.clearTint();  
                 }, [], this);
             }
         });
-        this.scene.physics.add.overlap(this, scene.ghosts, (slashAttack, ghost) => {
+
+        this.scene.physics.add.overlap(this, scene.ghosts, (slashAttack, ghost) => 
+        {
             const sprite = ghost as Ghost; 
             const player = this.player as Player;
-            if (!this.touchedEnemies.has(sprite) && sprite.body) {
+            if (!this.touchedEnemies.has(sprite) && sprite.body) 
+            {
                 player.gainMana = 2;
                 sprite.setTint(0xff0000);  
                 sprite.takeDamage(this.damageOnHit);  
                 this.touchedEnemies.add(sprite);
-                this.scene.time.delayedCall(200, () => {
+                this.scene.time.delayedCall(200, () => 
+                    {
                     sprite.clearTint();  
                 }, [], this);
             }
         });
+
         if(scene.kingSlime)
             {
-                this.scene.physics.add.overlap(this, scene.kingSlime, (ball, king) => {
+                this.scene.physics.add.overlap(this, scene.kingSlime, (ball, king) => 
+                {
                     const sprite = king as KingSlime;
                     const player = this.player as Player;
                     
-                    if (!this.touchedEnemies.has(sprite) && sprite.body) {
+                    if (!this.touchedEnemies.has(sprite) && sprite.body) 
+                    {
                         player.gainMana = 2;
                         sprite.setTint(0xff0000);
                         sprite.takeDamage(this.damageOnHit);
                         this.touchedEnemies.add(sprite);
-                        this.scene.time.delayedCall(200, () => {
+                        this.scene.time.delayedCall(200, () => 
+                        {
                             sprite.clearTint();  
                         }, [], this);
                     }
@@ -113,12 +127,14 @@ export default class SlashAttack extends Phaser.Physics.Arcade.Sprite {
     }
 
 
-    update() {
+    update() 
+    {
         this.x = this.player.x + (35 * this.direction);
         this.y = this.player.y
     }
 
-    onAnimationComplete(animation: Phaser.Animations.Animation, frame: Phaser.Animations.AnimationFrame): void {
+    onAnimationComplete(animation: Phaser.Animations.Animation, frame: Phaser.Animations.AnimationFrame): void 
+    {
         if (animation.key === 'slashAttack') {
             this.scene.events.off('update', this.update, this);
             this.touchedEnemies.clear();

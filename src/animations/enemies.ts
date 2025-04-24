@@ -7,25 +7,30 @@ export default function createEnemysAnimations(scene: Phaser.Scene) {
             frameRate: 6,
             repeat: -1 
         });
+    } else {
+        console.log("Animation 'slimeRun' already exists.");
     }
 
-        if (!scene.anims.exists('ghostRun')) {
-            scene.anims.create({
+    if (!scene.anims.exists('ghostRun')) {
+        scene.anims.create({
             key: 'ghostRun',
             frames: scene.anims.generateFrameNumbers('ghosts', { start: 0, end: 1 }),  // Frames 0 et 1
             frameRate: 6,
             repeat: 0 
         });
+    } else {
+        console.log("Animation 'ghostRun' already exists.");
     }
 
-    
-        if (!scene.anims.exists('kingSlimeIdle')) {
-            scene.anims.create({
+    if (!scene.anims.exists('kingSlimeIdle')) {
+        scene.anims.create({
             key: 'kingSlimeIdle',
             frames: scene.anims.generateFrameNumbers('kingSlime', { start: 0, end: 1 }),  // Frames 0 et 1
             frameRate: 3,
             repeat: -1 
         });
+    } else {
+        console.log("Animation 'kingSlimeIdle' already exists.");
     }
 
     if (!scene.anims.exists('ghostBall')) {
@@ -35,6 +40,8 @@ export default function createEnemysAnimations(scene: Phaser.Scene) {
             frameRate: 10,
             repeat: -1
         });
+    } else {
+        console.log("Animation 'ghostBall' already exists.");
     }
 
     if (!scene.anims.exists('kingWave')) {
@@ -44,5 +51,7 @@ export default function createEnemysAnimations(scene: Phaser.Scene) {
             frameRate: 6,
             repeat: -1
         });
+    } else {
+        console.log("Animation 'kingWave' already exists.");
     }
 }

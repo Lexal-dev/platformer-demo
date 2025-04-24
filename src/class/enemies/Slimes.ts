@@ -1,205 +1,218 @@
-import Player from "../player/Player";
+import Player from '../player/Player';
+import Enemy from './Enemy';
 
-export default class Slime extends Phaser.Physics.Arcade.Sprite {
-  private speed: number;
-  private right: boolean;
-  private left: boolean;
-  private followPlayer: boolean;
-  private bouncedOn: boolean;
-  private onCollision: boolean;
-  private timerOn: boolean;
-  private timer: number;
-  private entitie: Player;
-  private lifePoint: number;
-  private isNpc: boolean;
-  private ground: Phaser.Tilemaps.TilemapLayer;
+export default class Slime extends Enemy 
+{
+    private durationInSeconds: number;
+    private directionTimer?: Phaser.Time.TimerEvent;
+    private followPlayer: boolean = false;
+    private hasBounceOn: boolean = false;
+    private isFlying: boolean = false;
 
-
-  constructor(
-    scene: Phaser.Scene,
-    x: number,
-    y: number,
-    speed: number = 20,
-    isDirectionRight: boolean = true,
-    entitie: Player,
-    name: string = "Michel",
-    timer: number = 2000,
-    ground:Phaser.Tilemaps.TilemapLayer
-  ) {
-    super(scene, x, y, "slimes");
-
-    scene.add.existing(this);
-    scene.physics.add.existing(this);
-
-    this.speed = speed;
-    this.entitie = entitie;
-    this.name = name;
-    this.timer = timer;
-
-    this.lifePoint = 5;
-    this.isNpc = true;
-    this.right = isDirectionRight;
-    this.left = !isDirectionRight;
-    this.followPlayer = false;
-    this.bouncedOn = false;
-    this.onCollision = false;
-    this.timerOn = false;
-
-    this.ground = ground;
-
-    this.setDepth(1);
-    this.play("slimeRun", true);
-
-    scene.physics.add.collider(this, this.entitie, () => {
-      const body = this.body as Phaser.Physics.Arcade.Body;
-      const bodyPlayer = this.entitie.body as Phaser.Physics.Arcade.Body;
-
-      if(bodyPlayer.touching.down && body.touching.up) {
-        this.entitie.setVelocityY(-300);
-        this.scene.sound.play('hitSlimeSound', {
-          volume: 0.3,
-          rate: 1
-      });
-        this.destroy();
-      }
-
-      if(bodyPlayer.touching.up && body.touching.down) {
-        this.bounceOn()
-        this.entitie.setVelocityY(200);
-        this.entitie.takeDamage = 2;
-        this.entitie.setTinted(200);
-      }
-      if (bodyPlayer.touching.left && body.touching.right) {
-        this.entitie.knockBack(300, "left", 4);
-      }
-      if (bodyPlayer.touching.right && body.touching.left) {
-        this.entitie.knockBack(300, "right", 4);
-      }
-    })
-  }
-  preUpdate(time: number, delta: number): void {
-    super.preUpdate(time, delta);
-    this.update();
-  }
-
-  update(): void {
-    const body = this.body as Phaser.Physics.Arcade.Body;
-
-    if (body.gravity.y === 0) {
-      this.setGravityY(800);
+    constructor(scene: Phaser.Scene, x: number, y: number, speedX: number = 0, speedY: number = 0, ground: Phaser.Tilemaps.TilemapLayer, player: Player, direction: "right" | "left", durationInSeconds: number) 
+    {
+        super(scene, x, y, "slimes", "slimeRun", speedX, speedY, ground, player);
+        this.lifepoint = 5;
+        this.direction = direction;
+        this.durationInSeconds = durationInSeconds * 1000;
+        this.startDirectionTimer();
+        this.setBodySize(15 , 12)
+        this.setDepth(2);
     }
 
-    this.flipX = body.velocity.x < 0;
+    update() 
+    {
+        if (!this.enemyBody) return;
 
-    if (body.blocked.left) {
-      this.setVelocityX(this.speed);
-      this.right = true;
-      this.left = false;
-      return;
-    }
-
-    if (body.blocked.right) {
-      this.setVelocityX(-this.speed);
-      this.right = false;
-      this.left = true;
-      return;
-    }
-
-    const direction = this.right ? 1 : -1;
-    const detectionDistance = 2;
-    const nextX = this.x + direction * (this.width / 2 + 1) * detectionDistance;
-    const nextY = this.y + this.height / 2 + 12;
-
-    const tile = this.ground.getTileAtWorldXY(nextX, nextY);
-
-    if (!tile) {
-      if (this.name === "Alain-4" || this.name === "Alain-5") {
-      }
-
-      this.followPlayer = false;
-      this.setVelocityX(-direction * this.speed);
-      this.right = !this.right;
-      this.left = !this.left;
-      return;
-    }
-
-    this.moveSystem();
-    this.followingPlayer();
-  }
-
-  private moveSystem(): void {
-    if (this.followPlayer || this.bouncedOn || this.timerOn) return;
-
-    if (this.right) {
-      this.setVelocityX(this.speed);
-      this.timerOn = true;
-
-      this.scene.time.delayedCall(this.timer, () => {
-        this.timerOn = false;
-        this.right = false;
-        this.left = true;
-      });
-
-      return;
-    }
-
-    if (this.left) {
-      this.setVelocityX(-this.speed);
-      this.timerOn = true;
-
-    this.scene.time.delayedCall(this.timer, () => {
-      this.timerOn = false;
-      this.right = true;
-      this.left = false;
-    });
-
-      return;
-    }
-  }
-
-  private followingPlayer(): void {
-    if (this.bouncedOn) return;
-
-    const body = this.body as Phaser.Physics.Arcade.Body;
-    const targetBody = this.entitie.body as Phaser.Physics.Arcade.Body;
-
-    const distanceX = Math.abs(targetBody.x - body.x);
-    const distanceY = Math.abs(targetBody.y - body.y);
-    const direction = targetBody.x > body.x ? 1 : -1;
-
-    if (distanceX <= 75 && distanceY <= 20) {
-      this.followPlayer = true;
-      this.setVelocityX(direction * this.speed);
-    } else {
-      this.followPlayer = false;
-    }
-  }
-
-  public bounceOn(): void {
-    if (this.bouncedOn) return;
-
-    this.bouncedOn = true;
-    const direction = this.flipX ? 1 : -1;
-    this.scene.time.delayedCall(10, () => {
-    this.setVelocity(100 * direction, -150);
-    });
-    this.scene.time.delayedCall(500, () => {
-        if (this && this.body) {
-          this.setVelocityY(0);
+        if (this.isFlying && this.enemyBody.blocked.down) 
+        {
+            this.isFlying = false;
+            this.hasBounceOn = false;
         }
-        this.bouncedOn = false;
-      });
-  }
 
-  public takeDamage(damage: number): void {
-      this.lifePoint -= damage;
+        if (this.hasBounceOn) return;
 
-      if (this.lifePoint <= 0) {
-        this.scene.sound.play('hitSlimeSound', {
-          volume: 0.3,
-          rate: 1
-      });
-      this.destroy();
+        super.update();
+
+        this.checkForGround();
+        this.followingPlayer();
+
+        if (!this.followPlayer) 
+        {
+            this.handleGroundCollision();
+            this.movingSystem(this.direction);
+        }
+
+        this.flipX = this.enemyBody.velocity.x < 0;
     }
-  }
+
+    private followingPlayer(): void 
+    {
+        const distanceX = Math.abs(this.player.playerBody.x - this.enemyBody.x);
+        const distanceY = Math.abs(this.player.playerBody.y - this.enemyBody.y);
+        const direction = this.player.playerBody.x > this.enemyBody.x ? 1 : -1;
+
+        const wasFollowing = this.followPlayer;
+        this.followPlayer = distanceX <= 50 && distanceY <= 56;
+
+        if (this.followPlayer) 
+        {
+            this.setVelocityX(direction * this.speedX);
+            this.direction = direction === 1 ? "right" : "left";
+            this.stopDirectionTimer();
+        } 
+        else if (wasFollowing && !this.directionTimer) 
+        {
+            this.startDirectionTimer();
+        }
+    }
+
+    private movingSystem(direction: "right" | "left") 
+    {
+        this.setVelocityX(direction === "right" ? this.speedX : -this.speedX);
+    }
+
+    private startDirectionTimer(): void 
+    {
+        this.stopDirectionTimer();
+        this.directionTimer = this.scene.time.addEvent(
+        {
+            delay: this.durationInSeconds,
+            loop: true,
+            callback: () => 
+            {
+                this.direction = this.direction === "right" ? "left" : "right";
+            }
+        });
+    }
+
+    private stopDirectionTimer(): void 
+    {
+        if (this.directionTimer) 
+        {
+            this.directionTimer.remove(false);
+            this.directionTimer = undefined;
+        }
+    }
+
+    private checkForGround(): void 
+    {
+        const direction = this.flipX ? -1 : 1;
+        const detectionDistance = 2;
+        const nextX = this.x + direction * (this.width / 2 + 1) * detectionDistance;
+        const nextY = this.y + this.height / 2 + 12;
+
+        const tile = this.ground.getTileAtWorldXY(nextX, nextY);
+
+        if (!tile) 
+        {
+            if (this.direction === "right") 
+            {
+                this.stopDirectionTimer();
+                this.direction = "left";
+                this.startDirectionTimer();
+            } 
+            else if (this.direction === "left") 
+            {
+                this.stopDirectionTimer();
+                this.direction = "right";
+                this.startDirectionTimer();
+            }
+        }
+    }
+
+    private bounceOn(): void 
+    {
+        if (this.hasBounceOn) return;
+
+        this.hasBounceOn = true;
+        const direction = this.flipX ? 1 : -1;
+        const bounceForce = 150;
+
+        this.scene.time.delayedCall(50, () => 
+        {
+            this.setVelocity(bounceForce * direction, -bounceForce);
+        });
+
+        this.scene.time.delayedCall(150, () => {
+            if (this && this.body && this.enemyBody.blocked.down) 
+            {
+                this.setVelocity(0, 0);
+                this.hasBounceOn = false;
+            } 
+            else 
+            {
+                this.isFlying = true;
+            }
+        });
+    }
+
+    protected handlePlayerCollision(player: Player): void 
+    {
+        if (player.playerBody.touching.down && this.enemyBody.touching.up) 
+          {
+            player.forcedJump(-300);
+            this.scene.sound.play('hitSlimeSound', 
+            {
+                volume: 0.3,
+                rate: 1
+            })
+            this.destroy();
+        } 
+        else if (player.playerBody.touching.right && this.enemyBody.touching.left) 
+        {
+            player.knockBack(300, "right", 5, 200);
+            player.temporarilyDisableCollision(this.enemiesCollider);
+            this.bounceOn();
+        } 
+        else if (player.playerBody.touching.left && this.enemyBody.touching.right) 
+        {
+            player.temporarilyDisableCollision(this.enemiesCollider);
+            player.knockBack(300, "left", 5, 200);
+            this.bounceOn();
+        } 
+        else 
+        {
+            const knockDirection = Math.random() < 0.05 ? "left" : "right";
+            player.knockBack(300, knockDirection, 5, 200);
+            player.temporarilyDisableCollision(this.enemiesCollider);
+            this.bounceOn();
+        }
+    }
+
+    protected handleGroundCollision(): void 
+    {
+        if (this.enemyBody.blocked.right) 
+        {
+            this.stopDirectionTimer();
+            this.direction = "left";
+            this.startDirectionTimer();
+        }
+
+        if (this.enemyBody.blocked.left) 
+        {
+            this.stopDirectionTimer();
+            this.direction = "right";
+            this.startDirectionTimer();
+        }
+    }
+
+    public takeDamage(value: number) 
+    {
+        if (!this.isHit) 
+          {
+            this.lifepoint -= value;
+            this.isHit = true;
+
+            if (this.lifepoint <= 0) 
+            {
+                this.scene.sound.play('hitSlimeSound', 
+                {
+                    volume: 0.3,
+                    rate: 1
+                })
+                this.destroy();
+            }
+        }
+    }
 }

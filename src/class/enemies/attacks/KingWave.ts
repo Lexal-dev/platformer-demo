@@ -6,14 +6,13 @@ export default class KingWave extends Phaser.Physics.Arcade.Sprite {
     private ground: Phaser.Tilemaps.TilemapLayer;
     private waveSound?: Phaser.Sound.BaseSound;
 
-    constructor(scene:Start, x:number, y:number, direction:boolean = true, ground:Phaser.Tilemaps.TilemapLayer) {
+    constructor(scene:Start, x:number, y:number, direction:boolean = true, ground:Phaser.Tilemaps.TilemapLayer) 
+    {
         super(scene, x, y, 'kingWave');
-
-        this.scene = scene;
-
         scene.add.existing(this);
         scene.physics.add.existing(this);
-
+        
+        this.scene = scene;
         this.ground = ground;
         this.direction = direction ? -1 : 1;
         this.spriteDirection = direction;
@@ -27,46 +26,56 @@ export default class KingWave extends Phaser.Physics.Arcade.Sprite {
           rate: 1
         });  
         
-        scene.time.delayedCall(1500, () => {
+        scene.time.delayedCall(1500, () => 
+        {
             this.waveSound?.stop();
             this.waveSound?.destroy();
             this.destroy();
             
         });
 
-        scene.physics.add.collider(this, ground, () => {
+        scene.physics.add.collider(this, ground, () => 
+        {
             const body = this.body as Phaser.Physics.Arcade.Body;
-            if (body.blocked.down && body.velocity.x === 0) {
+            if (body.blocked.down && body.velocity.x === 0) 
+            {
                 this.setVelocityX(200 * this.direction)
             }
         });
-                scene.physics.add.collider(this, scene.player, () => {
-                    if(this.flipX)
-                    {
-                        scene.player.knockBack(300, "right", 2)
-                    }
-                    else
-                    {
-                        scene.player.knockBack(300, "left", 2)
-                    }
-                    
+
+        const playerKingWave = scene.physics.add.collider(this, scene.player, () => 
+        {
+            if(scene.player.isInviscible) return;
+            if(this.flipX)
+            {
+                scene.player.knockBack(300, "right", 5, 400);
+            }
+            else
+            {
+                scene.player.knockBack(300, "left", 5, 400);
+            }
+           
         });
 
 
     }
 
-
     update()
     {
+        if(this.body?.immovable === false)
+        {
+            this.setImmovable(true);
+        }
 
         this.flipX = this.spriteDirection;
         const body = this.body as Phaser.Physics.Arcade.Body;
+
         if(body.velocity.y === 0 )
         {
             this.setGravityY(600)
         }
-
-        if (body.velocity.x !== 200 && body.velocity.x !== -200) {
+        if (body.velocity.x !== 200 && body.velocity.x !== -200) 
+        {
             this.setVelocityX(200 * this.direction);
         }
 

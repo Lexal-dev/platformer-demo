@@ -2,7 +2,8 @@ import Player from "@/class/player/Player";
 import { Start } from "@/phaser/scenes/Start";
 import PlayerAttacks from "./playerAttacks";
 
-export default class PlayerAnimations {
+export default class PlayerAnimations 
+{
     private player: Player;
     private scene: Start;
     private attacks: PlayerAttacks;
@@ -11,13 +12,15 @@ export default class PlayerAnimations {
     private hasJumped: boolean = false;
     private chargedFireball: boolean = false;
 
-    constructor(player: Player, scene: Start, attacks: PlayerAttacks) {
+    constructor(player: Player, scene: Start, attacks: PlayerAttacks) 
+    {
         this.player = player;
         this.scene = scene;
         this.attacks = attacks;
     }
 
-    update() {
+    update() 
+    {
         const currentTime = this.scene.time.now;
         const isMoving = this.player.playerBody.velocity.x !== 0;
         const isGrounded = this.player.playerBody.blocked.down;
@@ -30,23 +33,34 @@ export default class PlayerAnimations {
         const costFireballMana = this.attacks.chargedFireballCost;
 
         // Petite delay pour valider un "charged" après 150ms
-        if (isCharging && !this.chargedFireball) {
-            this.scene.time.delayedCall(150, () => {
+        if (isCharging && !this.chargedFireball) 
+        {
+            this.scene.time.delayedCall(150, () => 
+            {
                 this.chargedFireball = true;
             });
-        } else if (!isCharging && this.chargedFireball) {
+        }
+        else if
+        (!isCharging && this.chargedFireball) 
+        {
+
             this.chargedFireball = false;
         }
 
         // === JUMP ===
-        if (isJumping) {
-            if (isCharging && currentMana >= costFireballMana && this.chargedFireball) {
+        if (isJumping) 
+        {
+            if (isCharging && currentMana >= costFireballMana && this.chargedFireball) 
+            {
                 this.player.play(isFullyCharged ? "endJumpOnCharged" : "endJumpOnCharging", true);
-            } else {
+            } 
+            else 
+            {
                 this.player.play("endJump", true);
             }
 
-            if (!this.hasJumped) {
+            if (!this.hasJumped) 
+            {
                 this.scene.sound.play('jumpSound', { volume: 0.6 });
                 this.hasJumped = true;
             }
@@ -54,17 +68,22 @@ export default class PlayerAnimations {
         }
 
         // Reset jump flag when grounded
-        if (isGrounded) {
+        if (isGrounded) 
+        {
             this.hasJumped = false;
         }
 
         // === CROUCH ===
-        if (isGrounded && isCrouch && this.player.touchActive && this.player.playerBody.velocity.y >= 0) {
+        if (isGrounded && isCrouch && this.player.touchActive && this.player.playerBody.velocity.y >= 0) 
+        {
             let anim = "crouch";
 
-            if (isCharging && currentMana >= costFireballMana && this.chargedFireball) {
+            if (isCharging && currentMana >= costFireballMana && this.chargedFireball) 
+            {
                 anim = isFullyCharged ? "crouchWalkOnCharged" : "crouchWalkOnCharging";
-            } else if (isMoving) {
+            } 
+            else if (isMoving) 
+            {
                 anim = "crouchWalk";
             }
 
@@ -75,14 +94,19 @@ export default class PlayerAnimations {
         }
 
         // === RUN ===
-        if (isGrounded && isMoving && !isCrouch) {
-            if (isCharging && currentMana >= costFireballMana && this.chargedFireball) {
+        if (isGrounded && isMoving && !isCrouch) 
+        {
+            if (isCharging && currentMana >= costFireballMana && this.chargedFireball) 
+            {
                 this.player.play(isFullyCharged ? "runCharged" : "runOnCharging", true);
-            } else {
+            } 
+            else 
+            {
                 this.player.play("run", true);
             }
 
-            if (currentTime - this.lastWalkSoundTime > this.walkSoundInterval) {
+            if (currentTime - this.lastWalkSoundTime > this.walkSoundInterval) 
+            {
                 this.scene.sound.play('walkSound', { volume: 0.1 });
                 this.lastWalkSoundTime = currentTime;
             }
@@ -91,9 +115,12 @@ export default class PlayerAnimations {
 
         // === IDLE ===
         if (isGrounded && !isMoving && !isCrouch) {
-            if (isCharging && currentMana >= costFireballMana && this.chargedFireball) {
+            if (isCharging && currentMana >= costFireballMana && this.chargedFireball) 
+            {
                 this.player.play(isFullyCharged ? "idleOnCharged" : "idleOnCharging", true);
-            } else {
+            } 
+            else 
+            {
                 this.player.play("idle", true);
             }
             return;

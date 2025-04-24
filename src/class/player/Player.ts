@@ -8,29 +8,31 @@ import PlayerAnimations from './PlayerAnimations';
 
 
 
-export default class Player extends Phaser.Physics.Arcade.Sprite {
+export default class Player extends Phaser.Physics.Arcade.Sprite 
+{
     private keys: PhaserKeyBindings;
     private playerController: PlayerController;
     private playerAttacks: PlayerAttacks;
     private playerAnimations: PlayerAnimations;
-    private hitting: boolean;
+    private _isInvincible: boolean;
     #movement: MovementState;
     #stats: PlayerStats;
   
-    constructor(scene: Phaser.Scene, x: number, y: number, keyManager: KeyManager ) {
+    constructor(scene: Phaser.Scene, x: number, y: number, keyManager: KeyManager ) 
+    {
         super(scene, x, y, 'player');
 
         scene.add.existing(this);
         scene.physics.add.existing(this);
         
-
+        
         this.setCollideWorldBounds(true);
-        this.setGravityY(800);
+        this.setGravityY(300);
         this.keys = keyManager.getKeys();   
         this.playerController = new PlayerController(this, this.keys, scene as Start)
         this.playerAttacks = new PlayerAttacks(this, this.keys, scene as Start)
         this.playerAnimations = new PlayerAnimations(this, scene as Start, this.playerAttacks);
-        this.hitting = false;
+        this._isInvincible = false;
 
         this.#movement = {
           speed: 150,
@@ -51,8 +53,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.#stats = {
           coins: 0,
-          lifePoint: 50,
-          lifePointMax: 50,
+          lifePoint: 30,
+          lifePointMax: 30,
           manaPoint: 20,
           manaPointMax: 20,
         };
@@ -61,10 +63,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     update():void 
     {
         if (!this.body) return; 
-        if (this.body.velocity.x !== 0) {
+        if (this.body.velocity.x !== 0) 
+        {
             this.flipX = this.body.velocity.x < 0;
-        }   
-        if(!this.touchActive) {
+        }
+        
+        if(!this.touchActive) 
+        {
             return;
         }   
         this.playerController.update();
@@ -73,12 +78,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
   
 
-    public knockBack(knockbackForce: number, knockbackDirection: 'top' | 'bottom' | 'left' | 'right', hitLife: number = 0) 
+    public knockBack(knockbackForce: number, knockbackDirection: 'top' | 'bottom' | 'left' | 'right', hitLife: number = 0, touchActiveTime:number = 100) 
     {
-        this.setTinted(100);
-
-        this.scene.time.delayedCall(10, () => {
-            switch (knockbackDirection) {
+        
+        this.scene.time.delayedCall(10, () => 
+        {
+            switch (knockbackDirection) 
+            {
                 case 'top':
                     this.setVelocityY(knockbackForce);
                     break;
@@ -87,24 +93,52 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                     break;
                 case 'left':
                     this.setVelocityX(knockbackForce);
-                    this.setVelocityY(-200); 
+                    this.setVelocityY(-knockbackForce * 1.25); 
                     break;
                 case 'right':
                     this.setVelocityX(-knockbackForce);
-                    this.setVelocityY(-200);
+                    this.setVelocityY(-knockbackForce * 1.25);
+
                     break;
             }
         });
     
-        if (hitLife !== 0) {
+        if (hitLife !== 0 && !this._isInvincible) 
+            {
             this.takeDamage = hitLife;
+            this.setTinted(touchActiveTime);
         }
+    }
+
+    public temporarilyDisableCollision(collider: Phaser.Physics.Arcade.Collider, duration: number = 500) 
+    {
+        if (!collider && !this.isInviscible) return;
+
+        collider.active = false;
+
+        this.scene.time.delayedCall(duration, () => 
+        {
+            collider.active = true;
+        });
+    }
+
+    public activateInvincibility(duration:number = 500) 
+    {
+        this._isInvincible = true;
+        console.log("est invicible");
+        this.scene.time.delayedCall(duration, () => {
+            this._isInvincible = false;
+            this.setVelocityX(0);
+            this.setVelocityY(0);
+            console.log("n'est plus invicible");
+        });
     }
 
     public setTinted(time: number) 
     {
         this.touchActive = false;
-        this.hasHit = true;
+        this.activateInvincibility(time)
+        this.setGravityY(2000);
         this.setTint(0xff0000);
         this.scene.sound.play('playerHitSound', {
             volume: 0.3,
@@ -113,13 +147,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.scene.time.delayedCall(time, () => {
             this.touchActive = true;
-            this.hasHit = false;
             this.clearTint();
-            this.setVelocityX(0);
+            this.setGravityY(800);
         });
     }
     
-
     public forcedJump(strengh:number)
     {
         this.touchActive = false;
@@ -129,27 +161,23 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             this.setVelocityY(strengh);
         }
         
-        this.scene.time.delayedCall(200, () => {
+        this.scene.time.delayedCall(50, () => 
+        {
             this.touchActive = true;
         })
     }
 
-    // HasHit
-    get hasHit(): boolean
-    {
-        return this.hitting;
-    }
-
-    set hasHit(boolean: boolean)
-    {
-        this.hitting = boolean;
-    }
 
     // BODY MANAGEMENT
-    get playerBody(): Phaser.Physics.Arcade.Body {
+    get playerBody(): Phaser.Physics.Arcade.Body 
+    {
         return this.body as Phaser.Physics.Arcade.Body;
     }
 
+    get isInviscible():boolean
+    {
+        return this._isInvincible;
+    }
 
     // LIFE MANAGEMENT
     get lifePoint(): number 
@@ -157,17 +185,20 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         return this.#stats.lifePoint;
     }
 
-    get lifePointMax(): number {
+    get lifePointMax(): number 
+    {
         return this.#stats.lifePointMax;
     }
 
-    set healing(healing: number) {
+    set healing(healing: number) 
+    {
         if(healing <= 0 || healing % 1 !== 0) return;
         this.#stats.lifePoint = Math.min(this.#stats.lifePoint + healing, this.#stats.lifePointMax);
     }
 
-    set takeDamage(damage: number) {
-        if (damage === 0 || damage % 1 !== 0 && !this.hasHit) return;
+    set takeDamage(damage: number) 
+    {
+        if (damage === 0 || damage % 1 !== 0) return;
         const positiveDamage = Math.abs(damage); 
         this.#stats.lifePoint = Math.max(0, this.#stats.lifePoint - positiveDamage); 
     }
@@ -191,7 +222,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.#stats.manaPoint = Math.min(this.#stats.manaPoint + mana, this.#stats.manaPointMax);
     }
 
-    set useMana(amount: number) {
+    set useMana(amount: number) 
+    {
         if (amount === 0 || amount % 1 !== 0) return;
         const positiveAmount = Math.abs(amount); 
     
@@ -216,7 +248,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.#stats.coins += positiveAmount;
     }
 
-    set removeCoins(amount: number) {
+    set removeCoins(amount: number) 
+    {
         if (amount === 0 || amount % 1 !== 0) return;
         this.#stats.coins = Math.max(0, this.#stats.coins - amount);  
     }

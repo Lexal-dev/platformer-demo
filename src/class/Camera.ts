@@ -4,7 +4,8 @@ export default class Camera {
 
     private ground: Phaser.Tilemaps.TilemapLayer;
 
-    constructor(scene:Phaser.Scene, player: Player, ground: Phaser.Tilemaps.TilemapLayer) {
+    constructor(scene:Phaser.Scene, player: Player, ground: Phaser.Tilemaps.TilemapLayer) 
+    {
         this.ground = ground;
 
         const map = this.ground.tilemap;

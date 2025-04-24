@@ -1,6 +1,7 @@
 import Player from "@/class/player/Player";
 
-export default class JumperKing extends Phaser.Physics.Arcade.Sprite {
+export default class JumperKing extends Phaser.Physics.Arcade.Sprite 
+{
     private player: Player;
     private ground: Phaser.Tilemaps.TilemapLayer
     constructor(scene: Phaser.Scene, x:number, y:number, player:Player, ground:Phaser.Tilemaps.TilemapLayer) 
@@ -35,7 +36,8 @@ export default class JumperKing extends Phaser.Physics.Arcade.Sprite {
         {
             if(this.body.touching.up && this.player.playerBody.touching.down && !this.player.onCrouch)
             {
-                this.scene.sound.play('jumperSound', {
+                this.scene.sound.play('jumperSound', 
+                {
                     volume: 0.4,
                     rate: 1
                 });

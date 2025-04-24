@@ -3,12 +3,14 @@ import KeyManager from '@/class/KeysManager';
 import Player from '@/class/player/Player';
 import KingSlime from '@/class/enemies/KingSlime';
 
-interface PointsBar {
+interface PointsBar 
+{
     backgroundBar: Phaser.GameObjects.Graphics;
     mainBar: Phaser.GameObjects.Graphics;
 }
 
-export default class HUD extends Phaser.Scene {
+export default class HUD extends Phaser.Scene 
+{
     private keyManager!: KeyManager;
     private keys: any;
 
@@ -33,16 +35,19 @@ export default class HUD extends Phaser.Scene {
 
     gamePause!: boolean;
 
-    constructor() {
+    constructor() 
+    {
         super({ key: 'HUD' },);
     }
 
-    init(data: { player: Player; kingSlime?: KingSlime }): void {
+    init(data: { player: Player; kingSlime?: KingSlime }): void 
+    {
         this.player = data.player;
         this.kingSlime = data.kingSlime;
     }
 
-    create(): void {
+    create(): void 
+    {
         this.keyManager = new KeyManager(this);
         this.keys = this.keyManager.getKeys();
 
@@ -103,14 +108,17 @@ export default class HUD extends Phaser.Scene {
         }
     }
 
-    update(): void {
-        if (Phaser.Input.Keyboard.JustUp(this.keys.PAUSE)) {
+    update(): void 
+    {
+        if (Phaser.Input.Keyboard.JustUp(this.keys.PAUSE)) 
+        {
             this.scene.pause('Start');
             this.scene.launch('Pause');
         }
 
         // PLAYER LIFE
-        if (this.currentLife !== this.player.lifePoint) {
+        if (this.currentLife !== this.player.lifePoint) 
+        {
             this.currentLife = this.player.lifePoint;
             const percent = Phaser.Math.Clamp(this.currentLife / this.maxLife, 0, 1);
             this.lifeBar.mainBar.clear();
@@ -119,7 +127,8 @@ export default class HUD extends Phaser.Scene {
         }
 
         // PLAYER MANA
-        if (this.currentMana !== this.player.manaPoint) {
+        if (this.currentMana !== this.player.manaPoint)
+        {
             this.currentMana = this.player.manaPoint;
             const percent = Phaser.Math.Clamp(this.currentMana / this.maxMana, 0, 1);
             this.manaBar.mainBar.clear();
@@ -128,15 +137,19 @@ export default class HUD extends Phaser.Scene {
         }
 
         // PLAYER SCORE (COINS)
-        if (this.coins !== this.player.coins) {
+        if (this.coins !== this.player.coins) 
+        {
             this.coins = this.player.coins;
             this.coinText.setText('Score: ' + this.coins);
         }
 
         // BOSS LIFE
-        if (this.kingSlime) {
-            if (this.kingSlime.lifePoint <= 0) {
-                if (this.lifeKingBar) {
+        if (this.kingSlime)
+        {
+            if (this.kingSlime.lifePoint <= 0) 
+                {
+                if (this.lifeKingBar) 
+                {
                     this.lifeKingBar.backgroundBar.destroy();
                     this.lifeKingBar.mainBar.destroy();
                     this.lifeKingBar = null;
@@ -144,8 +157,11 @@ export default class HUD extends Phaser.Scene {
 
                 const kingSlimeText = this.children.getByName('kingSlimeText') as Phaser.GameObjects.Text;
                 if (kingSlimeText) kingSlimeText.destroy();
-            } else {
-                if (this.lifeKingBar && this.currentKingLife !== this.kingSlime.lifePoint) {
+            } 
+            else 
+            {
+                if (this.lifeKingBar && this.currentKingLife !== this.kingSlime.lifePoint) 
+                {
                     this.currentKingLife = this.kingSlime.lifePoint;
                     const percent = Phaser.Math.Clamp(this.currentKingLife / this.maxKingLife, 0, 1);
                     const barWidth = 1200;
@@ -174,7 +190,8 @@ export default class HUD extends Phaser.Scene {
         maxPoints: number,
         color1: string = 'red',
         color2: string = 'grey'
-    ): PointsBar {
+    ): PointsBar 
+    {
         const percent = Phaser.Math.Clamp(points / maxPoints, 0, 1);
 
         const backgroundBar = this.add.graphics();
@@ -182,7 +199,8 @@ export default class HUD extends Phaser.Scene {
         backgroundBar.fillRect(x, y, sizeX, sizeY);
 
         let color: number;
-        switch (color1) {
+        switch (color1) 
+        {
             case 'red': color = 0xff0000; break;
             case 'dark-red': color = 0x8B0000; break;
             case 'blue': color = 0x0000ff; break;
