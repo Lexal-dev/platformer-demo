@@ -26,6 +26,7 @@ export default class Fireball extends Phaser.Physics.Arcade.Sprite {
         this.setScale(this.charged ? 3 : 1.5);
         this.setX(x + 20 * direction);
         body.setSize(16, 9);
+        this.setDepth(3)
 
         if (this.charged) 
         {

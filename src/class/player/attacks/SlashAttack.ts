@@ -33,6 +33,7 @@ export default class SlashAttack extends Phaser.Physics.Arcade.Sprite {
         this.setScale(1.5);
         this.setCollideWorldBounds(true);
         this.setOrigin(0.5, 0.5);
+        this.setDepth(3)
 
         if(this.body)
         {

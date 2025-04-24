@@ -147,26 +147,26 @@ export class Start extends Phaser.Scene {
         // If the ground tileset is valid, create corresponding layers with specific depths
         if (validGroundTileset) 
         {
-            // Create the ground layer with a depth of -9
+            // Create the ground layer
             this.groundLayer = createLayerWithHandling(map, 'ground', [validGroundTileset], 0);
 
-            // Create the spike layer with a depth of 0
+            // Create the spike layer
             this.spikeLayer = createLayerWithHandling(map, 'spike', [validGroundTileset], 1);
 
-            // Create the background layer with a depth of -10
+            // Create the background layer
             createLayerWithHandling(map, 'background', [validGroundTileset], -3);
 
-            // Create the water layer with a depth of 11
+            // Create the water layer 
             this.waterLayer = createLayerWithHandling(map, 'water', [validGroundTileset], 3);
 
-            // Create the exit layer with a depth of 5
+            // Create the exit layer
             createLayerWithHandling(map, 'exit', [validGroundTileset], 4);
 
             // Create the vine layer with a depth of 4
             createLayerWithHandling(map, 'vine', [validGroundTileset], 5);
 
             // Create the grass layer with a depth of 3
-            createLayerWithHandling(map, 'grass', [validGroundTileset], 1);
+            createLayerWithHandling(map, 'grass', [validGroundTileset], 3);
         }
 
         // Validating the "frontOfPlayer" layer
