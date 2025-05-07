@@ -106,6 +106,9 @@ export default class HUD extends Phaser.Scene
             .setDepth(1002)
             .setName('kingSlimeText');
         }
+
+        this.scene.pause('Start');
+        this.scene.launch('Pause');
     }
 
     update(): void 

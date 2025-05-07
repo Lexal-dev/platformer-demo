@@ -54,6 +54,12 @@ export class Pause extends Phaser.Scene
             color: '#ffffff',
         }).setOrigin(0.5).setScrollFactor(0).setDepth(2);
 
+        const returnToPortfolioText = this.add.text(width / 2, height / 2 + 90, 'Press I to return to portfolio', 
+        {
+                fontSize: '40px',
+                color: '#ffffff',
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(2);
+
         this.input.keyboard?.on('keydown-SPACE', () => 
         {
             this.resumeGame();
@@ -69,6 +75,11 @@ export class Pause extends Phaser.Scene
             if (this.controlsVisible) {
                 this.toggleControlsPanel();
             }
+        });
+
+        this.input.keyboard?.on('keydown-I', () => 
+        {
+            window.history.back();
         });
 
         this.createControlsPanel();
@@ -89,7 +100,7 @@ export class Pause extends Phaser.Scene
         const { width, height } = this.cameras.main;
 
         this.controlsBg = this.add.graphics();
-        this.controlsBg.fillStyle(0x000000, 0.9);
+        this.controlsBg.fillStyle(0x000000);
         this.controlsBg.fillRect(0, 0, width, height);
         this.controlsBg.setDepth(3).setVisible(false).setScrollFactor(0);
 

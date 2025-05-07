@@ -200,7 +200,7 @@ export class Start extends Phaser.Scene {
         createPlayerAnimations(this);
 
         // PLAYER
-        this.player = new Player(this, 50 , 950, this.keyManager);
+        this.player = new Player(this, 50 , 940, this.keyManager);
 
         //CAMERA
         if (this.groundLayer) 
@@ -421,11 +421,12 @@ export class Start extends Phaser.Scene {
         
         // HUD
         this.scene.launch('HUD', { player: this.player});
-
         // init for methods
         this.kingSlime = null
         this.bossActivated = false;
         this.restart = false;
+
+       ;
     }
 
   
