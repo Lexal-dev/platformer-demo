@@ -26,7 +26,7 @@ export default function ProjectsSection() {
   <div>
     <p className="text-center text-xl font-bold py-10">Platformer2D-phaser</p>
     <p className="mb-2">
-      Le projet est disponible sur GitHub :{' '}
+      Le projet est disponible sur GitHub :
       <a
         href="https://github.com/Lexal-dev/platformer-demo"
         target="_blank"
@@ -62,11 +62,11 @@ export default function ProjectsSection() {
       <li>Création d'un système d'interface utilisateur (HUD) pour afficher des informations essentielles (score, vie, etc.).</li>
       <li>Ajout d'effets sonores et de musique pour une meilleure immersion.</li>
     </ul>
-    <p>
+    <p className="mb-4">
       L'objectif principal de ce projet était d'apprendre à utiliser une technologie que je n'avais
-      jamais utilisée auparavant, Phaser, tout en développant un jeu 2D complet et fonctionnel.
+      jamais utilisée auparavant, Phaser, tout en développant un jeu 2D fonctionnel.
     </p>
-    <button className="font-bold hover:text-green-500 cursor-pointer" onClick={handleClickCredits}>Afficher la liste des crédits (effets sonores et musiques).</button>
+    <button className="font-bold hover:text-green-500 cursor-pointer text-start" onClick={handleClickCredits}>Afficher la liste des crédits (effets sonores et musiques).</button>
     <div className="w-full flex justify-center py-20">
       <button
         onClick={handleDemoClick}

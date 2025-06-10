@@ -6,7 +6,7 @@ import Camera from '@/class/Camera';  // Import Camera Class
 import KeyManager from '@/class/KeysManager';  // Import KeyManager Class (Handles player input)
 
 // --- Platforms ---------------------------
-import MovingPlatform from '@/platforms/MovingPlatforms';  // Import MovingPlatform Class
+import MovingPlatform from '@/class/platforms/MovingPlatforms';  // Import MovingPlatform Class
 
 // --- Tilemap Setup ----------------------
 import waterInit from '@/tilemapSetup/waterMap';  // Import Tilemap setup for water
@@ -36,7 +36,7 @@ import Canon from '@/class/traps/Canon';  // Canon Trap Class
 // --- Key Bindings -----------------------
 import { PhaserKeyBindings } from '@/types/keysManager';  // Import Key Binding Type Definitions
 import AssetLoader from '@/class/loaders/AssetLoader';
-import { error } from 'console';
+import HUD from '@/class/HUD';
 
 
 export class Start extends Phaser.Scene {
@@ -120,7 +120,7 @@ export class Start extends Phaser.Scene {
         }
         else 
         {
-            console.log("La musique est déjà en cours de lecture.");
+            console.log("Music is already played.");
         }
 
         // create boss music
@@ -420,13 +420,12 @@ export class Start extends Phaser.Scene {
         }
         
         // HUD
-        this.scene.launch('HUD', { player: this.player});
+        this.scene.launch('HUD', { player: this.player, isPause: true});
         // init for methods
         this.kingSlime = null
         this.bossActivated = false;
         this.restart = false;
 
-       ;
     }
 
   
@@ -507,7 +506,7 @@ export class Start extends Phaser.Scene {
             }
             
             this.bossActivated = true; // Mark boss as activated
-            this.scene.launch('HUD', { player: this.player, kingSlime: this.kingSlime }); // Launch HUD scene for boss fight
+            this.scene.launch('HUD', { player: this.player, kingSlime: this.kingSlime, isPause: false});
         }
     }
     

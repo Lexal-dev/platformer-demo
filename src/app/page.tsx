@@ -19,7 +19,7 @@ export default function Home() {
     
     <Header />
 
-      <div className="flex items-center justify-center w-full h-[55vh] text-2xl md:text-5xl md:px-2">
+      <div className="flex items-center justify-center w-full h-[55vh] text-2xl md:text-5xl text-center px-2">
         <TypewriterText />
       </div>
 

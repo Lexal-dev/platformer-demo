@@ -53,7 +53,7 @@ export default class Canon extends Phaser.Physics.Arcade.Sprite
         startScene.projectiles.add(shoot);
     
         this.scene.sound.play('canonSound', {
-            volume: 0.4,
+            volume: 0.2,
             rate: 1
         });
     
